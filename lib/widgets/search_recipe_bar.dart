@@ -18,7 +18,6 @@ class _SearchRecipeBarState extends State<SearchRecipeBar> {
   void _handleSearch(String text) async {
     if (text.isEmpty || _isLoading == true) return;
     setState(() => _isLoading = true);
-    await Future.delayed(Duration(seconds: 2));
     await widget.onSearch(text);
     setState(() {
       _isLoading = false;
@@ -30,26 +29,34 @@ class _SearchRecipeBarState extends State<SearchRecipeBar> {
     return Stack(
       alignment: Alignment.centerRight,
       children: [
-        TextField(
-          controller: _controller,
-          decoration: InputDecoration(
-            filled: true,
-            fillColor: Colors.white,
-            border: InputBorder.none,
-            prefixIcon: Icon(Icons.search),
-            hintText: 'Search any recipes',
-            hintStyle: TextStyle(color: Colors.grey),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(10),
-              borderSide: BorderSide.none,
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(10),
-              borderSide: BorderSide.none,
-            ),
+        Container(
+          height: 48,
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(12),
           ),
-          maxLines: 1,
-          onSubmitted: _handleSearch,
+          child: TextField(
+            controller: _controller,
+            cursorColor: Color(0xFFFF475D),
+            decoration: InputDecoration(
+              filled: true,
+              fillColor: Colors.white,
+              border: InputBorder.none,
+              prefixIcon: Icon(Icons.search),
+              hintText: 'Search any recipes',
+              hintStyle: TextStyle(color: Colors.grey),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+                borderSide: BorderSide.none,
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+                borderSide: BorderSide.none,
+              ),
+            ),
+            maxLines: 1,
+            onSubmitted: _handleSearch,
+          ),
         ),
         if (_isLoading == true)
           Padding(

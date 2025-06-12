@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:recipe_app/router.dart';
-import 'package:recipe_app/screens/introduction_screen.dart';
 void main() {
-  runApp(const RecipeApp());
+  runApp(
+    const RecipeApp(),
+  );
 }
 class RecipeApp extends StatefulWidget {
   const RecipeApp({super.key});
@@ -23,3 +25,8 @@ class _RecipeAppState extends State<RecipeApp> {
     );
   }
 }
+// TODO: Load category and area 1 time and save it to cache
+// TODO: Handle favourite system using shared preference (setString)
+// TODO: Handle Snackbar + comment and star rating submission
+// TODO: Research supabase_flutter to handle star & comments
+// TODO: Make survey_screen UI less blank

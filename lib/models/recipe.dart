@@ -1,21 +1,20 @@
-enum Complexity { simple, normal, challenging }
 class Recipe {
   const Recipe({
+    required this.id,
     required this.name,
-    required this.categories,
+    required this.category,
+    required this.area,
     required this.imageUrl,
-    required this.recipeUrl,
-    required this.duration,
-    required this.isDairyFree,
-    required this.isVegan,
-    required this.complexity,
+    required this.tags,
+    required this.ingredients,
+    required this.instructions,
   });
+  final String id;
   final String name;
-  final List<String> categories;
+  final String category;
+  final String area;
   final String imageUrl;
-  final String recipeUrl;
-  final String duration;
-  final bool isDairyFree;
-  final bool isVegan;
-  final Complexity complexity;
+  final String tags;
+  final List<String> ingredients;
+  final String instructions;
 }
