@@ -18,18 +18,16 @@ class IntroductionScreen extends StatelessWidget {
           Positioned.fill(
             child: BackdropFilter(
               filter: ImageFilter.blur(sigmaX: 6, sigmaY: 6),
-              child: Container(
-                color: Colors.black.withOpacity(0.6),
-              ),
+              child: Container(color: Colors.black.withOpacity(0.6)),
             ),
           ),
           Positioned(
             top: -18,
             right: -10,
             child: Image.asset(
-              color: Color(0xFFEDCED2),
               'assets/images/recipebox_leafycorner.png',
               width: 180,
+              color: const Color(0xFFEDCED2),
             ),
           ),
           Positioned(
@@ -38,9 +36,9 @@ class IntroductionScreen extends StatelessWidget {
             child: Transform.rotate(
               angle: 3.1416,
               child: Image.asset(
-                color: Color(0xFFEDCED2),
                 'assets/images/recipebox_leafycorner.png',
                 width: 180,
+                color: const Color(0xFFEDCED2),
               ),
             ),
           ),
@@ -77,7 +75,7 @@ class IntroductionScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 30),
                 ElevatedButton(
-                  onPressed: () => context.goNamed(Screen.survey.name),
+                  onPressed: () => context.goNamed(Screen.main_authentication.name),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.pinkAccent,
                     shape: RoundedRectangleBorder(

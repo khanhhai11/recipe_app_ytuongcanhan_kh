@@ -1,6 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:recipe_app/router.dart';
-void main() {
+import 'package:supabase_flutter/supabase_flutter.dart';
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Supabase.initialize(
+    url: 'https://jmesrzriskdmrmvcyabg.supabase.co',
+    anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImptZXNyenJpc2tkbXJtdmN5YWJnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDk3MzU1ODAsImV4cCI6MjA2NTMxMTU4MH0.rxBbEUcr_Et_efXyD-jcUWiWd9-SEWhVEOnEvDisVo8',
+  );
   runApp(
     const RecipeApp(),
   );
@@ -24,8 +30,15 @@ class _RecipeAppState extends State<RecipeApp> {
     );
   }
 }
-// TODO: Load category and area 1 time and save it to cache
-// TODO: Handle favourite system using shared preference (setString)
+// TODO: Make hard category and area files so no need to load anymore
+// TODO: Handle favourite system using supabase
 // TODO: Handle Snackbar + comment and star rating submission
 // TODO: Research supabase_flutter to handle star & comments
 // TODO: Make survey_screen UI less blank
+// TODO: Add filter by main ingredients
+// TODO: Fix categories part so that we don't use again search screen, add a category description (fetchable) with details button
+// TODO: Add average star ratings for all recipe & suggestions item
+// TODO: Add supabase authentication (sign up, sign in,...) and UI
+// TODO: Replace survey shared_preferences into supabase for each userId
+// TODO: Check when user signed in, if survey_answer is null then make them do the survey
+// TODO: Check when user signed up, if there is an account with the same name -> tell the user

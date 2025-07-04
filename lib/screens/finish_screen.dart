@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:transparent_image/transparent_image.dart';
 import '../models/recipe.dart';
 import 'package:recipe_app/router.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 class FinishScreen extends StatefulWidget {
   const FinishScreen({super.key, required this.recipe});
   final Recipe recipe;
@@ -13,8 +14,6 @@ class FinishScreen extends StatefulWidget {
 class _FinishScreenState extends State<FinishScreen> {
   double _rating = 0.0;
   final TextEditingController _controller = TextEditingController();
-  final Color primaryPink = const Color(0xFFFF475D);
-  final Color sendGreen = const Color(0xFF4CAF50);
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -119,11 +118,34 @@ class _FinishScreenState extends State<FinishScreen> {
                 const SizedBox(width: 16),
                 Expanded(
                   child: ElevatedButton.icon(
-                    onPressed: (){},
+                    onPressed: () async {
+                      final recipeId = widget.recipe.id;
+                      final rating = _rating;
+                      final comment = _controller.text;
+                      try {
+                        await Supabase.instance.client.from('recipe_app_comments_and_ratings').upsert({
+                          'user_id': Supabase.instance.client.auth.currentUser?.id,
+                          'recipe_id': recipeId,
+                          'ratings': rating,
+                          'comments': comment,
+                        });
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('Thanks for your feedback!')),
+                          );
+                          context.goNamed(Screen.main_navigation.name);
+                        }
+                      } catch (e) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text('Error: $e')),
+                        );
+                        print(e);
+                      }
+                    },
                     icon: const Icon(Icons.send, color: Colors.white),
                     label: const Text('Send', style: TextStyle(fontSize: 16, color: Colors.white)),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: sendGreen,
+                      backgroundColor: Color(0xFF4CAF50),
                       padding: const EdgeInsets.symmetric(vertical: 16),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8),

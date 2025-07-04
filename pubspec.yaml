@@ -48,7 +48,7 @@ dependencies:
   provider: ^6.0.0
   shared_preferences: ^2.2.3
   shimmer: ^3.0.0
-  carousel_slider: ^4.2.1
+  supabase_flutter: ^2.9.1
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -106,3 +106,4 @@ flutter:
     -  assets/images/recipebox_introphoto.png
     -  assets/images/recipebox_leafycorner.png
     -  assets/images/recipebox_banner.png
+    -  assets/images/recipebox_decoratedish.png

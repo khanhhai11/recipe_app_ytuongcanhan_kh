@@ -8,6 +8,7 @@ import 'package:recipe_app/models/recipe.dart';
 import '../../functions/fetch_recipe_by_id.dart';
 import '../../models/survey_answer.dart';
 import '../../widgets/suggestion_mini_item.dart';
+import 'package:recipe_app/services/supabase_survey.dart';
 class HomeGrid extends StatefulWidget {
   const HomeGrid({super.key});
   @override
@@ -23,13 +24,20 @@ class _HomeGridState extends State<HomeGrid> {
     _loadSurveyAndFetchSuggestions();
   }
   Future<void> _loadSurveyAndFetchSuggestions() async {
-    final answer = await SurveyAnswer.loadFromPrefs();
-    if (mounted) {
+    try {
+      final answer = await SupabaseSurveyService.fetchCurrentUserAnswer();
+      if (!mounted) return;
       setState(() {
         _surveyAnswer = answer;
       });
+      await _fetchSuggestionRecipes();
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error loading survey: $e')),
+      );
+      setState(() => _isLoadingSuggestions = false);
     }
-    await _fetchSuggestionRecipes();
   }
   Future<void> _fetchSuggestionRecipes() async {
     setState(() => _isLoadingSuggestions = true);
@@ -43,30 +51,34 @@ class _HomeGridState extends State<HomeGrid> {
         for (var meal in meals) {
           if (suggestions.length >= 5) break;
           final recipe = await fetchRecipeById(meal['idMeal'] ?? '');
-          if (recipe != null && (area.isEmpty || recipe.area.toLowerCase() == area.toLowerCase())) {
+          if (recipe != null &&
+              (area.isEmpty || recipe.area.toLowerCase() == area.toLowerCase())) {
             suggestions.add(recipe);
           }
         }
-      } else {
-        if (area.isNotEmpty) {
-          final data = await fetchRecipeByArea(area);
-          final meals = data['meals'] ?? [];
-          for (var meal in meals.take(5)) {
-            final recipe = await fetchRecipeById(meal['idMeal'] ?? '');
-            if (recipe != null) suggestions.add(recipe);
-          }
+      } else if (area.isNotEmpty) {
+        final data = await fetchRecipeByArea(area);
+        final meals = data['meals'] ?? [];
+        for (var meal in meals.take(5)) {
+          final recipe = await fetchRecipeById(meal['idMeal'] ?? '');
+          if (recipe != null) suggestions.add(recipe);
         }
       }
-      if (mounted) setState(() {
-        _suggestionRecipes = suggestions;
-        _isLoadingSuggestions = false;
-      });
+      if (mounted) {
+        setState(() {
+          _suggestionRecipes = suggestions;
+          _isLoadingSuggestions = false;
+        });
+      }
     } catch (e) {
-      if (mounted) setState(() => _isLoadingSuggestions = false);
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to load suggestions: $e')));
+      if (mounted) {
+        setState(() => _isLoadingSuggestions = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to load suggestions: $e')),
+        );
+      }
     }
   }
-
   List<String> _extractIngredients(Map<String, dynamic> data) {
     final ingredients = <String>[];
     for (var i = 1; i <= 20; i++) {
