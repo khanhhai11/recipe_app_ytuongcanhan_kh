@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:go_router/go_router.dart';
 import 'package:recipe_app/screens/all_suggestions_screen.dart';
 import 'package:recipe_app/screens/authentication/main_authentication_screen.dart';
+import 'package:recipe_app/screens/authentication/reset_password_screen.dart';
 import 'package:recipe_app/screens/authentication/sign_up_screen.dart';
 import 'package:recipe_app/screens/grids/category_grid.dart';
 import 'package:recipe_app/screens/grids/favourite_grid.dart';
@@ -16,9 +17,10 @@ import 'models/recipe.dart';
 import 'package:recipe_app/screens/grids/main_navigation_screen.dart';
 enum Screen {
   introduction,
-  main_authentication,
+  main_auth,
   sign_in,
   sign_up,
+  reset_password,
   survey,
   main_navigation,
   all_suggestions,
@@ -41,8 +43,8 @@ final router = GoRouter(
       builder: (context, state) => IntroductionScreen(),
       routes: [
         GoRoute(
-          path: Screen.main_authentication.name,
-          name: Screen.main_authentication.name,
+          path: Screen.main_auth.name,
+          name: Screen.main_auth.name,
           builder: (context, state) => MainAuthenticationScreen(),
           routes: [
             GoRoute(
@@ -54,6 +56,11 @@ final router = GoRouter(
               path: Screen.sign_up.name,
               name: Screen.sign_up.name,
               builder: (context, state) => const SignUpScreen(),
+            ),
+            GoRoute(
+              path: Screen.reset_password.name,
+              name: Screen.reset_password.name,
+              builder: (context, state) => const ResetPasswordScreen(),
             ),
             GoRoute(
               path: Screen.survey.name,

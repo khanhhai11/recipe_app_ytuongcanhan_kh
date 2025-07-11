@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:recipe_app/router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -6,10 +7,14 @@ Future<void> main() async {
   await Supabase.initialize(
     url: 'https://jmesrzriskdmrmvcyabg.supabase.co',
     anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImptZXNyenJpc2tkbXJtdmN5YWJnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDk3MzU1ODAsImV4cCI6MjA2NTMxMTU4MH0.rxBbEUcr_Et_efXyD-jcUWiWd9-SEWhVEOnEvDisVo8',
+    authOptions: const FlutterAuthClientOptions(
+      authFlowType: AuthFlowType.pkce,
+    ),
   );
-  runApp(
-    const RecipeApp(),
-  );
+  if (kIsWeb == false){
+    await Supabase.instance.client.auth.getSessionFromUrl(Uri.base);
+  }
+  runApp(const RecipeApp());
 }
 class RecipeApp extends StatefulWidget {
   const RecipeApp({super.key});
@@ -40,5 +45,5 @@ class _RecipeAppState extends State<RecipeApp> {
 // TODO: Add average star ratings for all recipe & suggestions item
 // TODO: Add supabase authentication (sign up, sign in,...) and UI
 // TODO: Replace survey shared_preferences into supabase for each userId
-// TODO: Check when user signed in, if survey_answer is null then make them do the survey
 // TODO: Check when user signed up, if there is an account with the same name -> tell the user
+// TODO: Fix Google Log In

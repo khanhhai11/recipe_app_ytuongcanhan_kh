@@ -75,7 +75,7 @@ class IntroductionScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 30),
                 ElevatedButton(
-                  onPressed: () => context.goNamed(Screen.main_authentication.name),
+                  onPressed: () => context.goNamed(Screen.main_auth.name),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.pinkAccent,
                     shape: RoundedRectangleBorder(

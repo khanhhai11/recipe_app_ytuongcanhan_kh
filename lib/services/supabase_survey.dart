@@ -16,10 +16,12 @@ class SupabaseSurveyService {
   }
   static Future<void> saveOrUpdateSurvey(SurveyAnswer answer) async {
     final userId = _client.auth.currentUser?.id;
+    final username = _client.auth.currentUser?.userMetadata?['display_name'];
     debugPrint(userId);
     if (userId == null) throw Exception('No user logged in');
     final response = await _client.from('recipe_app_survey_answers').upsert({
       'user_id': userId,
+      'username': username,
       'isVegan': answer.isVegan,
       'area': answer.area,
     }).select();

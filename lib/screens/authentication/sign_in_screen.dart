@@ -116,8 +116,8 @@ class _SignInScreenState extends State<SignInScreen> {
             Align(
               alignment: Alignment.centerRight,
               child: TextButton(
-                onPressed: (){
-                  // TODO: Handle this
+                onPressed: () async {
+                  context.goNamed(Screen.reset_password.name);
                 },
                 style: TextButton.styleFrom(
                   foregroundColor: const Color(0xffff475d),
@@ -183,4 +183,3 @@ class _SignInScreenState extends State<SignInScreen> {
     );
   }
 }
-// TODO: FetchCurrent

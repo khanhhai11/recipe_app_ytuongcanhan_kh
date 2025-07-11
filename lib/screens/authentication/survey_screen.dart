@@ -27,19 +27,25 @@ class _SurveyScreenState extends State<SurveyScreen> {
         _areas = List<String>.from(data.map((a) => a['strArea']));
       });
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Error loading areas')),
-      );
+      _showSnackBar('Error loading areas');
     }
   }
   Future<void> _checkIfSurveyExists() async {
-    final answer = await SupabaseSurveyService.fetchCurrentUserAnswer();
-    if (answer != null && mounted) {
-      print(answer);
-      context.goNamed(Screen.main_navigation.name);
+    try {
+      final answer = await SupabaseSurveyService.fetchCurrentUserAnswer();
+      if (answer != null && mounted) {
+        context.goNamed(Screen.main_navigation.name);
+      }
+    } catch (e) {
+      _showSnackBar('Failed to check survey data');
     }
   }
   Future<void> _submitSurvey() async {
+    final user = Supabase.instance.client.auth.currentUser;
+    if (user == null) {
+      _showSnackBar('You must be logged in to submit the survey.');
+      return;
+    }
     if (_isVegan == null) {
       _showSnackBar('Please select if you are vegan.');
       return;
@@ -56,14 +62,11 @@ class _SurveyScreenState extends State<SurveyScreen> {
         context.goNamed(Screen.main_navigation.name);
       }
     } catch (e) {
-      _showSnackBar('Error: ${e.toString()}');
-      print(e);
+      _showSnackBar('Error saving survey: ${e.toString()}');
     }
   }
   void _showSnackBar(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message)),
-    );
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
   }
   @override
   Widget build(BuildContext context) {
@@ -145,8 +148,7 @@ class _SurveyScreenState extends State<SurveyScreen> {
                           child: Text(area),
                         );
                       }).toList(),
-                      onChanged: (value) =>
-                          setState(() => _selectedArea = value),
+                      onChanged: (value) => setState(() => _selectedArea = value),
                     ),
                   ),
                 ),
@@ -157,15 +159,13 @@ class _SurveyScreenState extends State<SurveyScreen> {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: primaryColor,
                     foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 40, vertical: 14),
+                    padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 14),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
                   ),
                   onPressed: _submitSurvey,
-                  child:
-                  const Text('Submit', style: TextStyle(fontSize: 16)),
+                  child: const Text('Submit', style: TextStyle(fontSize: 16)),
                 ),
               ),
             ],
@@ -175,4 +175,3 @@ class _SurveyScreenState extends State<SurveyScreen> {
     );
   }
 }
-// TODO: Fix bug 'new row violates RLS'

@@ -125,6 +125,7 @@ class _FinishScreenState extends State<FinishScreen> {
                       try {
                         await Supabase.instance.client.from('recipe_app_comments_and_ratings').upsert({
                           'user_id': Supabase.instance.client.auth.currentUser?.id,
+                          'username': Supabase.instance.client.auth.currentUser?.userMetadata?['display_name'],
                           'recipe_id': recipeId,
                           'ratings': rating,
                           'comments': comment,
