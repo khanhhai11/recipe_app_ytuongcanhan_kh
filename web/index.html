@@ -55,12 +55,5 @@
       });
     });
   </script>
-  <script>
-    if (window.location.href.includes('?code=')) {
-      const url = window.location.href;
-      window.localStorage.setItem('supabase.auth.redirectUrl', url);
-      window.location.href = '/';
-    }
-  </script>
 </body>
 </html>

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:transparent_image/transparent_image.dart';
-import '../models/recipe.dart';
-import '../router.dart';
+import '../../models/recipe.dart';
+import '../../router.dart';
 import 'dart:math';
 class RecipeScreen extends StatefulWidget {
   const RecipeScreen({super.key, required this.recipe});

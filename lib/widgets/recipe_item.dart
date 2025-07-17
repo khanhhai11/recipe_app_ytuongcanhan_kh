@@ -3,11 +3,31 @@ import 'package:go_router/go_router.dart';
 import 'package:transparent_image/transparent_image.dart';
 import '../models/recipe.dart';
 import '../router.dart';
-class RecipeItem extends StatelessWidget {
+import '../services/supabase_comments_and_ratings.dart';
+class RecipeItem extends StatefulWidget {
   const RecipeItem({super.key, required this.recipe});
   final Recipe recipe;
   @override
+  State<RecipeItem> createState() => _RecipeItemState();
+}
+class _RecipeItemState extends State<RecipeItem> {
+  double _averageRating = 0.0;
+  bool _isLoading = true;
+  @override
+  void initState() {
+    super.initState();
+    _loadAverageRating();
+  }
+  Future<void> _loadAverageRating() async {
+    final average = await SupabaseCommentsAndRatingsService.fetchAverageRating(widget.recipe.id);
+    setState(() {
+      _averageRating = average;
+      _isLoading = false;
+    });
+  }
+  @override
   Widget build(BuildContext context) {
+    final recipe = widget.recipe;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 10),
       child: InkWell(
@@ -38,6 +58,30 @@ class RecipeItem extends StatelessWidget {
                     height: 220,
                     width: double.infinity,
                     fit: BoxFit.cover,
+                  ),
+                ),
+                Positioned(
+                  top: 8,
+                  right: 8,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: Colors.black87,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.star, color: Colors.amber, size: 16),
+                        const SizedBox(width: 4),
+                        Text(
+                          _isLoading ? '...' : _averageRating.toStringAsFixed(1),
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 14,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
                 Container(

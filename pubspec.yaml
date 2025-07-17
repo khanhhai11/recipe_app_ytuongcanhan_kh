@@ -43,13 +43,13 @@ dependencies:
   animations: ^2.0.11
   flutter_rating_bar: ^4.0.0
   path: ^1.8.2
-  sqflite_common_ffi_web: ^0.4.3+1
   provider: ^6.0.0
   shimmer: ^3.0.0
   supabase_flutter: ^2.9.1
   app_links: ^6.4.0
   google_sign_in: ^7.1.0
   font_awesome_flutter: ^10.7.0
+  country_flags: ^3.3.0
 dev_dependencies:
   flutter_test:
     sdk: flutter

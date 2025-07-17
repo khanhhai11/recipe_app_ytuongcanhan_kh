@@ -1,18 +1,22 @@
 import 'package:flutter/cupertino.dart';
 import 'package:go_router/go_router.dart';
-import 'package:recipe_app/screens/all_suggestions_screen.dart';
+import 'package:recipe_app/screens/category_details_screen.dart';
+import 'package:recipe_app/screens/recipe/all_suggestions_screen.dart';
 import 'package:recipe_app/screens/authentication/main_authentication_screen.dart';
 import 'package:recipe_app/screens/authentication/reset_password_screen.dart';
 import 'package:recipe_app/screens/authentication/sign_up_screen.dart';
-import 'package:recipe_app/screens/grids/category_grid.dart';
+import 'package:recipe_app/screens/drawer%20functions/account_info_screen.dart';
+import 'package:recipe_app/screens/drawer%20functions/survey_data_screen.dart';
+import 'package:recipe_app/screens/grids/category_&_area_grid.dart';
 import 'package:recipe_app/screens/grids/favourite_grid.dart';
-import 'package:recipe_app/screens/finish_screen.dart';
+import 'package:recipe_app/screens/recipe/finish_screen.dart';
 import 'package:recipe_app/screens/introduction_screen.dart';
 import 'package:recipe_app/screens/authentication/sign_in_screen.dart';
-import 'package:recipe_app/screens/recipe_details_screen.dart';
-import 'package:recipe_app/screens/recipe_screen.dart';
-import 'package:recipe_app/screens/search_screen.dart';
+import 'package:recipe_app/screens/recipe/recipe_details_screen.dart';
+import 'package:recipe_app/screens/recipe/recipe_screen.dart';
+import 'package:recipe_app/screens/recipe/search_screen.dart';
 import 'package:recipe_app/screens/authentication/survey_screen.dart';
+import 'models/category.dart';
 import 'models/recipe.dart';
 import 'package:recipe_app/screens/grids/main_navigation_screen.dart';
 enum Screen {
@@ -23,8 +27,11 @@ enum Screen {
   reset_password,
   survey,
   main_navigation,
+  account_info,
+  survey_data,
   all_suggestions,
   category,
+  category_details,
   favourite,
   search,
   recipe,
@@ -84,9 +91,7 @@ final router = GoRouter(
                     final extra = state.extra as Map<String, dynamic>;
                     return SearchScreen(
                       searchText: extra['searchText'] as String,
-                      isFromCategory: extra['isFromCategory'] ?? false,
                       isFromArea: extra['isFromArea'] ?? false,
-                      isFromSuggestion: extra['isFromSuggestion'] ?? false,
                     );
                   },
                 ),
@@ -110,9 +115,28 @@ final router = GoRouter(
                   ],
                 ),
                 GoRoute(
+                  path: Screen.account_info.name,
+                  name: Screen.account_info.name,
+                  builder: (context, state) => const AccountInfoScreen(),
+                ),
+                GoRoute(
+                  path: Screen.survey_data.name,
+                  name: Screen.survey_data.name,
+                  builder: (context, state) => const SurveyDataScreen(),
+                ),
+                GoRoute(
                   path: Screen.category.name,
                   name: Screen.category.name,
-                  builder: (context, state) => CategoryGrid(),
+                  builder: (context, state) => CategoryAndAreaGrid(),
+                  routes: [
+                    GoRoute(
+                      path: Screen.category_details.name,
+                      name: Screen.category_details.name,
+                      builder: (context, state) {
+                        return CategoryDetailsScreen(category: state.extra as Category);
+                      },
+                    ),
+                  ],
                 ),
                 GoRoute(
                   path: Screen.favourite.name,

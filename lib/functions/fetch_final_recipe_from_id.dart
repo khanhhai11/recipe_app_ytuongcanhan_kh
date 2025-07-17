@@ -1,11 +1,12 @@
 import '../models/recipe.dart';
-import '../services/network.dart';
-Future<Recipe?> fetchRecipeById(String id) async {
+import '../services/api_network.dart';
+Future<Recipe?> fetchFinalRecipeFromId(String id) async {
   final response = await searchRecipeById(id);
   final meals = response['meals'];
   if (meals != null && meals.isNotEmpty) {
     final mealJson = meals[0];
     List<String> ingredients = [];
+    final seenIngredients = <String>{};
     for (int i = 1; i <= 20; i++) {
       final ingredient = mealJson['strIngredient$i'];
       final measure = mealJson['strMeasure$i'];
@@ -14,10 +15,12 @@ Future<Recipe?> fetchRecipeById(String id) async {
           ingredient.trim().toLowerCase() != 'null') {
         final cleanedIngredient = ingredient.trim();
         final cleanedMeasure = (measure ?? '').trim();
-        if (cleanedMeasure.isNotEmpty) {
-          ingredients.add('$cleanedMeasure $cleanedIngredient');
-        } else {
-          ingredients.add(cleanedIngredient);
+        final combined = cleanedMeasure.isNotEmpty
+            ? '$cleanedMeasure $cleanedIngredient'
+            : cleanedIngredient;
+        if (!seenIngredients.contains(combined.toLowerCase())) {
+          ingredients.add(combined);
+          seenIngredients.add(combined.toLowerCase());
         }
       }
     }

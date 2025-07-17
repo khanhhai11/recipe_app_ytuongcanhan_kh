@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:recipe_app/models/survey_answer.dart';
 import 'package:recipe_app/router.dart';
-import 'package:recipe_app/services/network.dart';
 import 'package:recipe_app/services/supabase_survey.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '../../data/areas.dart';
 class SurveyScreen extends StatefulWidget {
   const SurveyScreen({super.key});
   @override
@@ -13,22 +13,11 @@ class SurveyScreen extends StatefulWidget {
 class _SurveyScreenState extends State<SurveyScreen> {
   bool? _isVegan;
   String? _selectedArea;
-  List<String> _areas = [];
+  final List<String> _areas = Areas;
   @override
   void initState() {
     super.initState();
-    _loadAreas();
     _checkIfSurveyExists();
-  }
-  Future<void> _loadAreas() async {
-    try {
-      final data = await fetchAreas();
-      setState(() {
-        _areas = List<String>.from(data.map((a) => a['strArea']));
-      });
-    } catch (e) {
-      _showSnackBar('Error loading areas');
-    }
   }
   Future<void> _checkIfSurveyExists() async {
     try {

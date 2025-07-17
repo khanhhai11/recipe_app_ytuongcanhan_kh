@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:recipe_app/services/supabase_authentication.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../router.dart';
 class ResetPasswordScreen extends StatefulWidget {
   const ResetPasswordScreen({super.key});
@@ -10,74 +9,66 @@ class ResetPasswordScreen extends StatefulWidget {
 }
 class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
   final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _tokenController = TextEditingController();
   final TextEditingController _newPasswordController = TextEditingController();
   final TextEditingController _confirmPasswordController = TextEditingController();
   bool _isSendingEmail = false;
-  bool _isCheckingVerification = false;
   bool _isUpdatingPassword = false;
-  bool _isRecovery = false;
-  bool? response = null;
-  @override
-  void initState() {
-    super.initState();
-  }
+  bool _showResetForm = false;
   void _showSnackBar(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text(message), duration: const Duration(seconds: 2)),
     );
-    print(message);
   }
-  Future<void> _handleSendResetEmail() async {
+  Future<void> _handleSendResetOTP() async {
     setState(() => _isSendingEmail = true);
     try {
       final email = _emailController.text.trim();
-      response = await SupabaseAuthService.sendResetLink(email);
-      _showSnackBar('Reset link sent! Check your email.');
+      await SupabaseAuthService.sendResetOTP(email);
+      _showSnackBar('Reset token sent! Check your email.');
+      setState(() => _showResetForm = true);
     } catch (e) {
       _showSnackBar(e.toString());
     } finally {
       setState(() => _isSendingEmail = false);
     }
   }
-  Future<void> _handleEmailVerifiedCheck() async {
-    setState(() => _isCheckingVerification = true);
-    try {
-      if (response == true) {
-        final user = Supabase.instance.client.auth.currentUser;
-        if (user != null && user.emailConfirmedAt != null) {
-          _showSnackBar('Email verified! You can now reset your password.');
-          setState(() => _isRecovery = true);
-        } else {
-          _showSnackBar('Email not verified yet. Please check again.');
-        }
-      }
-    } catch (e) {
-      final errorMessage = e.toString();
-      if (errorMessage.contains('AuthSessionMissingException') ||
-          errorMessage.contains('Auth session missing!') ||
-          errorMessage.contains('statusCode: 400')) {
-        _showSnackBar(
-          'Session missing. Please return to the app **using the link in your email** to continue password reset.',
-        );
-      } else {
-        _showSnackBar('Error checking verification: $errorMessage');
-      }
-    } finally {
-      setState(() => _isCheckingVerification = false);
-    }
-  }
   Future<void> _handlePasswordUpdate() async {
     setState(() => _isUpdatingPassword = true);
     try {
+      final token = _tokenController.text.trim();
+      final email = _emailController.text.trim();
       final newPassword = _newPasswordController.text.trim();
       final confirmPassword = _confirmPasswordController.text.trim();
-      await SupabaseAuthService.updatePassword(newPassword, confirmPassword);
+      await SupabaseAuthService.updatePasswordWithToken(
+        email: email,
+        token: token,
+        newPassword: newPassword,
+        confirmPassword: confirmPassword,
+      );
       _showSnackBar('Password updated! You can now sign in.');
       context.goNamed(Screen.sign_in.name);
     } catch (e) {
-      _showSnackBar(e.toString());
+      if (e.toString().contains('Token has expired')) {
+        _showSnackBar('Token expired. Please request a new one.');
+        setState(() => _showResetForm = false);
+      } else {
+        _showSnackBar(e.toString());
+      }
     } finally {
       setState(() => _isUpdatingPassword = false);
+    }
+  }
+  Future<void> _resendToken() async {
+    setState(() => _isSendingEmail = true);
+    try {
+      final email = _emailController.text.trim();
+      await SupabaseAuthService.sendResetOTP(email);
+      _showSnackBar('A new reset token has been sent to your email.');
+    } catch (e) {
+      _showSnackBar(e.toString());
+    } finally {
+      setState(() => _isSendingEmail = false);
     }
   }
   @override
@@ -98,14 +89,14 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                     icon: const Icon(Icons.arrow_back),
                   ),
                   const SizedBox(width: 8),
-                  Text(
-                    _isRecovery ? 'Reset Password' : 'Forgot Password',
-                    style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                  const Text(
+                    'Create new password',
+                    style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
                   ),
                 ],
               ),
               const SizedBox(height: 32),
-              _isRecovery ? _buildResetForm() : _buildEmailForm(),
+              _showResetForm ? _buildResetForm() : _buildEmailForm(),
             ],
           ),
         ),
@@ -117,47 +108,21 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const Text(
-          'Enter your email to receive a password reset link.',
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          'Enter the email associated with your account:',
+          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
         ),
         const SizedBox(height: 20),
-        TextField(
-          controller: _emailController,
-          decoration: _inputStyle('Email'),
-          keyboardType: TextInputType.emailAddress,
-        ),
+        _styledField(controller: _emailController, hint: 'Email', icon: Icons.email),
         const SizedBox(height: 24),
         ElevatedButton(
-          onPressed: _isSendingEmail ? null : _handleSendResetEmail,
+          onPressed: _isSendingEmail ? null : _handleSendResetOTP,
           style: _buttonStyle(),
           child: _isSendingEmail
               ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-              : const Text('Send Reset Link', style: TextStyle(color: Colors.white)),
-        ),
-        const Divider(height: 40),
-        Center(
-          child: Column(
-            children: const [
-              Text(
-                'Already clicked the link?',
-                style: TextStyle(fontWeight: FontWeight.w600),
-              ),
-              SizedBox(height: 8),
-              Text(
-                'Return to this app to reset your password.',
-                style: TextStyle(color: Colors.black87),
-              ),
-            ],
-          ),
+              : const Text('Send Reset Token', style: TextStyle(color: Colors.white)),
         ),
         const SizedBox(height: 24),
-        ElevatedButton(
-          onPressed: _isCheckingVerification ? null : _handleEmailVerifiedCheck,
-          style: _buttonStyle(),
-          child: _isCheckingVerification
-              ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-              : const Text("I've verified my email", style: TextStyle(color: Colors.white)),
-        ),
+        _infoBox(),
       ],
     );
   }
@@ -166,50 +131,111 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const Text(
-          'Email verified. You can now reset your password.',
-          style: TextStyle(color: Colors.green, fontWeight: FontWeight.bold),
-        ),
-        const SizedBox(height: 16),
-        const Text(
-          'Enter your new password.',
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          'Enter the reset token from your email and set a new password.',
+          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
         ),
         const SizedBox(height: 20),
-        TextField(
-          controller: _newPasswordController,
-          obscureText: true,
-          decoration: _inputStyle('New Password'),
-        ),
+        _styledField(controller: _tokenController, hint: 'Reset Token', icon: Icons.vpn_key),
         const SizedBox(height: 16),
-        TextField(
-          controller: _confirmPasswordController,
-          obscureText: true,
-          decoration: _inputStyle('Confirm New Password'),
-        ),
+        _styledField(controller: _emailController, hint: 'Email', icon: Icons.email, readOnly: true),
+        const SizedBox(height: 16),
+        _styledField(controller: _newPasswordController, hint: 'New Password', icon: Icons.lock, obscure: true),
+        const SizedBox(height: 16),
+        _styledField(controller: _confirmPasswordController, hint: 'Confirm Password', icon: Icons.lock, obscure: true),
         const SizedBox(height: 24),
         ElevatedButton(
-          onPressed: _isUpdatingPassword ? null : _handlePasswordUpdate,
+          onPressed: _isUpdatingPassword? null: _handlePasswordUpdate,
           style: _buttonStyle(),
           child: _isUpdatingPassword
               ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-              : const Text('Confirm', style: TextStyle(color: Colors.white)),
+              : const Text('Reset Password', style: TextStyle(color: Colors.white)),
         ),
+        const SizedBox(height: 24),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Text(
+              "Didn’t get the email?",
+              style: TextStyle(color: Colors.black87),
+            ),
+            const SizedBox(width: 4),
+            GestureDetector(
+              onTap: _isSendingEmail ? null : _resendToken,
+              child: Text(
+                'Resend token',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: _isSendingEmail ? Colors.grey : const Color(0xffff475d),
+                ),
+              ),
+            ),
+          ],
+        )
       ],
     );
   }
-  InputDecoration _inputStyle(String hint) => InputDecoration(
-    hintText: hint,
-    filled: true,
-    fillColor: Colors.white,
-    border: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(14),
-      borderSide: BorderSide.none,
-    ),
-  );
+  Widget _styledField({
+    required TextEditingController controller,
+    required String hint,
+    required IconData icon,
+    bool obscure = false,
+    bool readOnly = false,
+  }) {
+    return TextField(
+      controller: controller,
+      obscureText: obscure,
+      readOnly: readOnly,
+      decoration: InputDecoration(
+        hintText: hint,
+        prefixIcon: Icon(icon, color: Colors.black54),
+        filled: true,
+        fillColor: Colors.white,
+        contentPadding: const EdgeInsets.symmetric(vertical: 18, horizontal: 16),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14),
+          borderSide: BorderSide.none,
+        ),
+      ),
+    );
+  }
+  Widget _infoBox() {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: const Color(0xffffd5db),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xffffa1af)),
+      ),
+      child: const Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Icon(Icons.info_outline, color: Color(0xffff475d), size: 24),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: const [
+                Text(
+                  'What happens next?',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xffff475d),
+                  ),
+                ),
+                SizedBox(height: 8),
+                Text('1. We’ll send a reset token to your email'),
+                Text('2. Check your inbox (and spam folder)'),
+                Text('3. Copy the token and use it on the next screen'),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
   ButtonStyle _buttonStyle() => ElevatedButton.styleFrom(
     backgroundColor: const Color(0xffff475d),
-    padding: const EdgeInsets.symmetric(vertical: 16),
+    padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
   );
 }
-// TODO: I think that this only work on Iphone so yea

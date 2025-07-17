@@ -3,8 +3,8 @@ import 'package:animations/animations.dart';
 import 'package:go_router/go_router.dart';
 import 'package:loading_indicator/loading_indicator.dart';
 import 'package:recipe_app/router.dart';
-import '../functions/fetch_recipe_by_id.dart';
-import '../models/recipe.dart';
+import '../../functions/fetch_final_recipe_from_id.dart';
+import '../../models/recipe.dart';
 class RecipeDetailsScreen extends StatefulWidget {
   const RecipeDetailsScreen({super.key, required this.recipe});
   final Recipe recipe;
@@ -29,7 +29,7 @@ class _RecipeDetailsScreenState extends State<RecipeDetailsScreen> {
       _isLoading = true;
       _loadFailed = false;
     });
-    final detailed = await fetchRecipeById(recipe.id);
+    final detailed = await fetchFinalRecipeFromId(recipe.id);
     if (detailed != null) {
       setState(() {
         recipe = detailed;

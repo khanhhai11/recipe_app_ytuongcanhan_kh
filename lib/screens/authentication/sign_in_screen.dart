@@ -69,56 +69,30 @@ class _SignInScreenState extends State<SignInScreen> {
               'Email:',
               style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
             ),
-            const SizedBox(height: 4),
-            TextField(
+            const SizedBox(height: 6),
+            _buildTextField(
               controller: _emailController,
-              decoration: InputDecoration(
-                hintText: 'Enter email here',
-                hintStyle: const TextStyle(color: Colors.grey),
-                prefixIcon:
-                const Icon(Icons.email_outlined, color: Colors.grey),
-                filled: true,
-                fillColor: Colors.white,
-                contentPadding:
-                const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(14),
-                  borderSide: BorderSide.none,
-                ),
-              ),
+              hintText: 'Enter email here',
+              icon: Icons.email_outlined,
               keyboardType: TextInputType.emailAddress,
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 24),
             const Text(
               'Password:',
               style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
             ),
-            const SizedBox(height: 4),
-            TextField(
+            const SizedBox(height: 6),
+            _buildTextField(
               controller: _passwordController,
-              decoration: InputDecoration(
-                hintText: 'Enter password here',
-                hintStyle: const TextStyle(color: Colors.grey),
-                prefixIcon:
-                const Icon(Icons.lock_outline, color: Colors.grey),
-                filled: true,
-                fillColor: Colors.white,
-                contentPadding:
-                const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(14),
-                  borderSide: BorderSide.none,
-                ),
-              ),
+              hintText: 'Enter password here',
+              icon: Icons.lock_outline,
               obscureText: true,
             ),
             const SizedBox(height: 8),
             Align(
               alignment: Alignment.centerRight,
               child: TextButton(
-                onPressed: () async {
-                  context.goNamed(Screen.reset_password.name);
-                },
+                onPressed: () => context.goNamed(Screen.reset_password.name),
                 style: TextButton.styleFrom(
                   foregroundColor: const Color(0xffff475d),
                   padding: EdgeInsets.zero,
@@ -162,10 +136,7 @@ class _SignInScreenState extends State<SignInScreen> {
                   ),
                   const SizedBox(width: 4),
                   GestureDetector(
-                    onTap: () {
-                      context.goNamed(Screen.sign_up.name);
-                    },
-                    behavior: HitTestBehavior.opaque,
+                    onTap: () => context.goNamed(Screen.sign_up.name),
                     child: const Text(
                       'Register',
                       style: TextStyle(
@@ -178,6 +149,30 @@ class _SignInScreenState extends State<SignInScreen> {
               ),
             ],
           ],
+        ),
+      ),
+    );
+  }
+  Widget _buildTextField({
+    required TextEditingController controller,
+    required String hintText,
+    required IconData icon,
+    bool obscureText = false,
+    TextInputType keyboardType = TextInputType.text,
+  }) {
+    return TextField(
+      controller: controller,
+      obscureText: obscureText,
+      keyboardType: keyboardType,
+      decoration: InputDecoration(
+        hintText: hintText,
+        prefixIcon: Icon(icon, color: Colors.grey),
+        filled: true,
+        fillColor: Colors.white,
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14),
+          borderSide: BorderSide.none,
         ),
       ),
     );

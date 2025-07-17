@@ -1,12 +1,15 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
-import 'package:recipe_app/services/network.dart';
+import 'package:recipe_app/functions/fetch_final_random_recipe.dart';
+import 'package:recipe_app/services/api_network.dart';
 import 'package:recipe_app/widgets/search_recipe_bar.dart';
 import 'package:go_router/go_router.dart';
 import 'package:recipe_app/router.dart';
 import 'package:recipe_app/models/recipe.dart';
-import '../../functions/fetch_recipe_by_id.dart';
+import '../../functions/fetch_final_recipe_from_id.dart';
+import '../../functions/load_survey_and_fetch_suggestions.dart';
 import '../../models/survey_answer.dart';
+import '../../widgets/settings_button.dart';
 import '../../widgets/suggestion_mini_item.dart';
 import 'package:recipe_app/services/supabase_survey.dart';
 class HomeGrid extends StatefulWidget {
@@ -24,60 +27,13 @@ class _HomeGridState extends State<HomeGrid> {
     _loadSurveyAndFetchSuggestions();
   }
   Future<void> _loadSurveyAndFetchSuggestions() async {
-    try {
-      final answer = await SupabaseSurveyService.fetchCurrentUserAnswer();
-      if (!mounted) return;
-      setState(() {
-        _surveyAnswer = answer;
-      });
-      await _fetchSuggestionRecipes();
-    } catch (e) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error loading survey: $e')),
-      );
-      setState(() => _isLoadingSuggestions = false);
-    }
-  }
-  Future<void> _fetchSuggestionRecipes() async {
-    setState(() => _isLoadingSuggestions = true);
-    try {
-      List<Recipe> suggestions = [];
-      final isVegan = _surveyAnswer?.isVegan ?? false;
-      final area = _surveyAnswer?.area ?? '';
-      if (isVegan) {
-        final data = await fetchRecipeByCategory('Vegan');
-        final meals = data['meals'] ?? [];
-        for (var meal in meals) {
-          if (suggestions.length >= 5) break;
-          final recipe = await fetchRecipeById(meal['idMeal'] ?? '');
-          if (recipe != null &&
-              (area.isEmpty || recipe.area.toLowerCase() == area.toLowerCase())) {
-            suggestions.add(recipe);
-          }
-        }
-      } else if (area.isNotEmpty) {
-        final data = await fetchRecipeByArea(area);
-        final meals = data['meals'] ?? [];
-        for (var meal in meals.take(5)) {
-          final recipe = await fetchRecipeById(meal['idMeal'] ?? '');
-          if (recipe != null) suggestions.add(recipe);
-        }
-      }
-      if (mounted) {
-        setState(() {
-          _suggestionRecipes = suggestions;
-          _isLoadingSuggestions = false;
-        });
-      }
-    } catch (e) {
-      if (mounted) {
-        setState(() => _isLoadingSuggestions = false);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to load suggestions: $e')),
-        );
-      }
-    }
+    final (answer, suggestions) = await loadSurveyAndFetchSuggestions(context);
+    if (!mounted) return;
+    setState(() {
+      _surveyAnswer = answer;
+      _suggestionRecipes = suggestions;
+      _isLoadingSuggestions = false;
+    });
   }
   List<String> _extractIngredients(Map<String, dynamic> data) {
     final ingredients = <String>[];
@@ -111,7 +67,7 @@ class _HomeGridState extends State<HomeGrid> {
         ),
         actions: [
           Padding(
-            padding: const EdgeInsets.all(8.0),
+            padding: EdgeInsets.only(right: 6),
             child: InkWell(
               borderRadius: BorderRadius.circular(12),
               onTap: () {
@@ -152,30 +108,12 @@ class _HomeGridState extends State<HomeGrid> {
                                   elevation: 4,
                                 ),
                                 onPressed: () async {
-                                  try {
-                                    final recipeData = await fetchRandomRecipe();
-                                    final recipe = Recipe(
-                                      id: recipeData['idMeal'] ?? '',
-                                      name: recipeData['strMeal'] ?? '',
-                                      imageUrl: recipeData['strMealThumb'] ?? '',
-                                      ingredients: _extractIngredients(recipeData),
-                                      instructions: recipeData['strInstructions'] ?? '',
-                                      category: recipeData['strCategory'] ?? '',
-                                      area: recipeData['strArea'] ?? '',
-                                      tags: recipeData['strTags'] ?? '',
+                                  final recipe = await fetchFinalRandomRecipe(context);
+                                  if (recipe != null && mounted) {
+                                    context.goNamed(Screen.recipe.name, extra: recipe);
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(content: Text('Randomized Recipe: ${recipe.name}')),
                                     );
-                                    if (mounted) {
-                                      context.goNamed(Screen.recipe.name, extra: recipe);
-                                      ScaffoldMessenger.of(context).showSnackBar(
-                                        SnackBar(content: Text('Randomized Recipe: ${recipe.name}')),
-                                      );
-                                    }
-                                  } catch (e) {
-                                    if (mounted) {
-                                      ScaffoldMessenger.of(context).showSnackBar(
-                                        SnackBar(content: Text('Failed to fetch recipe: $e')),
-                                      );
-                                    }
                                   }
                                 },
                                 child: const Text(
@@ -219,6 +157,10 @@ class _HomeGridState extends State<HomeGrid> {
                 ),
               ),
             ),
+          ),
+          const Padding(
+            padding: EdgeInsets.only(right: 6),
+            child: SettingsButton(),
           ),
         ],
       ),
