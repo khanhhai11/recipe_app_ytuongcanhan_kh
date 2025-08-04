@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
 import 'package:transparent_image/transparent_image.dart';
 import '../models/recipe.dart';
+import '../providers/favourite_provider.dart';
 import '../router.dart';
 import '../services/supabase_comments_and_ratings.dart';
+import '../services/supabase_favourites.dart';
 class RecipeItem extends StatefulWidget {
   const RecipeItem({super.key, required this.recipe});
   final Recipe recipe;
@@ -20,10 +23,12 @@ class _RecipeItemState extends State<RecipeItem> {
   }
   Future<void> _loadAverageRating() async {
     final average = await SupabaseCommentsAndRatingsService.fetchAverageRating(widget.recipe.id);
-    setState(() {
-      _averageRating = average;
-      _isLoading = false;
-    });
+    if (mounted) {
+      setState(() {
+        _averageRating = average;
+        _isLoading = false;
+      });
+    }
   }
   @override
   Widget build(BuildContext context) {
@@ -38,7 +43,7 @@ class _RecipeItemState extends State<RecipeItem> {
         child: Container(
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: Color(0xFFff475D), width: 4),
+            border: Border.all(color: const Color(0xFFff475D), width: 4),
           ),
           child: Card(
             elevation: 6,
@@ -58,6 +63,27 @@ class _RecipeItemState extends State<RecipeItem> {
                     height: 220,
                     width: double.infinity,
                     fit: BoxFit.cover,
+                  ),
+                ),
+                Positioned(
+                  top: 8,
+                  left: 8,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.8),
+                      shape: BoxShape.circle,
+                    ),
+                    padding: const EdgeInsets.all(6),
+                    child: Consumer<FavouritesProvider>(
+                      builder: (context, favouritesProvider, _) {
+                        final isFav = favouritesProvider.isFavourite(recipe.id);
+                        return Icon(
+                          isFav ? Icons.favorite : Icons.favorite_border,
+                          color: isFav ? Colors.red : Colors.grey,
+                          size: 20,
+                        );
+                      },
+                    ),
                   ),
                 ),
                 Positioned(

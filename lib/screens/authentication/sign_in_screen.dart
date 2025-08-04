@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:recipe_app/services/supabase_authentication.dart';
 import 'package:recipe_app/router.dart';
+import 'package:recipe_app/services/supabase_survey.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 class SignInScreen extends StatefulWidget {
   const SignInScreen({super.key});
@@ -31,7 +32,12 @@ class _SignInScreenState extends State<SignInScreen> {
         );
       } else {
         _showSnackBar('Signed in successfully!');
-        context.goNamed(Screen.survey.name);
+        final userSurveyData = await SupabaseSurveyService.fetchCurrentUserAnswer();
+        if (userSurveyData != null) {
+          context.goNamed(Screen.main_navigation.name);
+        } else {
+          context.goNamed(Screen.survey.name);
+        }
       }
     } catch (e) {
       _showSnackBar(e.toString());

@@ -83,7 +83,7 @@ class _CategoryAndAreaGridState extends State<CategoryAndAreaGrid> with TickerPr
               final category = categories[index];
               return InkWell(
                 onTap: () {
-                  context.goNamed(Screen.category_details.name, extra: category);
+                  context.pushNamed(Screen.category_details.name, extra: category);
                 },
                 child: Card(
                   shape: RoundedRectangleBorder(

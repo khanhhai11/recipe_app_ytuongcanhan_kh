@@ -4,17 +4,12 @@ class SupabaseCommentsAndRatingsService {
   static Future<double> fetchAverageRating(String recipeId) async {
     final response = await _client
         .from('recipe_app_comments_and_ratings')
-        .select('ratings')
+        .select('ratings.avg()')
         .eq('recipe_id', recipeId)
-        .not('ratings', 'is', null);
-    if (response.isEmpty) return 0.0;
-    final ratings = response
-        .map((r) => r['ratings'])
-        .where((r) => r != null)
-        .map((r) => (r as num).toDouble())
-        .toList();
-    final average = ratings.reduce((a, b) => a + b) / ratings.length;
-    return double.parse(average.toStringAsFixed(1));
+        .single();
+    final avg = response['avg'];
+    if (avg == null) return 0.0;
+    return (avg as num).toDouble();
   }
   static Future<Map<String, dynamic>?> fetchUserFeedback(String recipeId) async {
     final userId = _client.auth.currentUser?.id;

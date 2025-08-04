@@ -39,7 +39,9 @@ enum Screen {
   finish,
 }
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
+final RouteObserver<ModalRoute<void>> routeObserver = RouteObserver<ModalRoute<void>>();
 final router = GoRouter(
+  observers: [routeObserver],
   initialLocation: '/',
   debugLogDiagnostics: true,
   navigatorKey: _rootNavigatorKey,

@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
 import 'package:transparent_image/transparent_image.dart';
 import '../models/recipe.dart';
+import '../providers/favourite_provider.dart';
 import '../router.dart';
 import '../services/supabase_comments_and_ratings.dart';
 class SuggestionMiniItem extends StatefulWidget {
@@ -20,18 +22,20 @@ class _SuggestionMiniItemState extends State<SuggestionMiniItem> {
   }
   Future<void> _loadAverageRating() async {
     final average = await SupabaseCommentsAndRatingsService.fetchAverageRating(widget.recipe.id);
-    setState(() {
-      _averageRating = average;
-      _isLoading = false;
-    });
+    if (mounted) {
+      setState(() {
+        _averageRating = average;
+        _isLoading = false;
+      });
+    }
   }
   @override
   Widget build(BuildContext context) {
     return InkWell(
       onTap: () => context.goNamed(Screen.recipe.name, extra: widget.recipe),
       borderRadius: BorderRadius.circular(16),
-      splashColor: const Color(0xFFFF475D).withOpacity(0.3),
-      highlightColor: const Color(0xFFFF475D).withOpacity(0.1),
+      splashColor: const Color(0xFFFF475D),
+      highlightColor: const Color(0xFFFF475D),
       child: Container(
         width: 180,
         decoration: BoxDecoration(
@@ -52,7 +56,6 @@ class _SuggestionMiniItemState extends State<SuggestionMiniItem> {
           borderRadius: BorderRadius.circular(14),
           child: Stack(
             children: [
-              // Image
               FadeInImage.memoryNetwork(
                 placeholder: kTransparentImage,
                 image: widget.recipe.imageUrl,
@@ -60,7 +63,27 @@ class _SuggestionMiniItemState extends State<SuggestionMiniItem> {
                 width: double.infinity,
                 fit: BoxFit.cover,
               ),
-              // Top-right rating badge
+              Positioned(
+                top: 6,
+                left: 6,
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    shape: BoxShape.circle,
+                  ),
+                  padding: const EdgeInsets.all(4),
+                  child: Consumer<FavouritesProvider>(
+                    builder: (context, favouritesProvider, _) {
+                      final isFav = favouritesProvider.isFavourite(widget.recipe.id);
+                      return Icon(
+                        isFav ? Icons.favorite : Icons.favorite_border,
+                        color: Colors.redAccent,
+                        size: 18,
+                      );
+                    },
+                  ),
+                ),
+              ),
               Positioned(
                 top: 6,
                 right: 6,
@@ -83,7 +106,6 @@ class _SuggestionMiniItemState extends State<SuggestionMiniItem> {
                   ),
                 ),
               ),
-              // Bottom info gradient + text
               Align(
                 alignment: Alignment.bottomCenter,
                 child: Container(
@@ -92,8 +114,8 @@ class _SuggestionMiniItemState extends State<SuggestionMiniItem> {
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
                       colors: [
-                        Colors.black.withOpacity(0.7),
-                        Colors.black.withOpacity(0.2),
+                        Colors.black,
+                        Colors.black,
                         Colors.transparent,
                       ],
                       begin: Alignment.bottomCenter,

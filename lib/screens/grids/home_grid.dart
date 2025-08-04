@@ -1,17 +1,16 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:recipe_app/functions/fetch_final_random_recipe.dart';
-import 'package:recipe_app/services/api_network.dart';
 import 'package:recipe_app/widgets/search_recipe_bar.dart';
 import 'package:go_router/go_router.dart';
 import 'package:recipe_app/router.dart';
 import 'package:recipe_app/models/recipe.dart';
-import '../../functions/fetch_final_recipe_from_id.dart';
 import '../../functions/load_survey_and_fetch_suggestions.dart';
 import '../../models/survey_answer.dart';
+import '../../providers/favourite_provider.dart';
 import '../../widgets/settings_button.dart';
 import '../../widgets/suggestion_mini_item.dart';
-import 'package:recipe_app/services/supabase_survey.dart';
 class HomeGrid extends StatefulWidget {
   const HomeGrid({super.key});
   @override
@@ -34,25 +33,6 @@ class _HomeGridState extends State<HomeGrid> {
       _suggestionRecipes = suggestions;
       _isLoadingSuggestions = false;
     });
-  }
-  List<String> _extractIngredients(Map<String, dynamic> data) {
-    final ingredients = <String>[];
-    for (var i = 1; i <= 20; i++) {
-      final ingredient = data['strIngredient$i'];
-      final measure = data['strMeasure$i'];
-      if (ingredient != null &&
-          ingredient.toString().trim().isNotEmpty &&
-          ingredient.toString().toLowerCase() != 'null') {
-        final cleanedIngredient = ingredient.toString().trim();
-        final cleanedMeasure = (measure ?? '').toString().trim();
-        ingredients.add(
-          cleanedMeasure.isNotEmpty
-              ? '$cleanedMeasure $cleanedIngredient'
-              : cleanedIngredient,
-        );
-      }
-    }
-    return ingredients;
   }
   @override
   Widget build(BuildContext context) {
@@ -183,9 +163,7 @@ class _HomeGridState extends State<HomeGrid> {
                       Screen.search.name,
                       extra: {
                         'searchText': text.toString(),
-                        'isFromCategory': false,
                         'isFromArea': false,
-                        'isFromSuggestion': false,
                       },
                     );
                   },

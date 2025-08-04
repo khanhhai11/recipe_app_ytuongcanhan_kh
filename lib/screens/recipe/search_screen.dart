@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:loading_indicator/loading_indicator.dart';
 import 'package:recipe_app/widgets/search_recipe_bar.dart';
 import '../../functions/fetch_final_recipes_from_area.dart';
-import '../../functions/search_final_recipes_from_name.dart';
+import '../../functions/fetch_final_recipes_from_name.dart';
 import '../../models/recipe.dart';
 import '../../widgets/recipe_item.dart';
 class SearchScreen extends StatefulWidget {
@@ -34,7 +34,7 @@ class _SearchScreenState extends State<SearchScreen> {
     if (widget.isFromArea) {
       results = await fetchFinalRecipesFromArea(text);
     } else {
-      results = await searchFinalRecipesFromName(text);
+      results = await fetchFinalRecipesFromName(text);
     }
     setState(() {
       detailedRecipes = results;

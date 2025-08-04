@@ -14,6 +14,7 @@ class _SurveyScreenState extends State<SurveyScreen> {
   bool? _isVegan;
   String? _selectedArea;
   final List<String> _areas = Areas;
+  bool _checkingSurvey = true;
   @override
   void initState() {
     super.initState();
@@ -24,9 +25,18 @@ class _SurveyScreenState extends State<SurveyScreen> {
       final answer = await SupabaseSurveyService.fetchCurrentUserAnswer();
       if (answer != null && mounted) {
         context.goNamed(Screen.main_navigation.name);
+      } else if (mounted) {
+        setState(() {
+          _checkingSurvey = false;
+        });
       }
     } catch (e) {
       _showSnackBar('Failed to check survey data');
+      if (mounted) {
+        setState(() {
+          _checkingSurvey = false;
+        });
+      }
     }
   }
   Future<void> _submitSurvey() async {
@@ -61,6 +71,14 @@ class _SurveyScreenState extends State<SurveyScreen> {
   Widget build(BuildContext context) {
     const Color backgroundColor = Color(0xffeff1f7);
     const Color primaryColor = Color(0xffff475d);
+
+    if (_checkingSurvey) {
+      return const Scaffold(
+        body: Center(
+          child: CircularProgressIndicator(color: Color(0xFFFF475D)),
+        ),
+      );
+    }
     return Scaffold(
       backgroundColor: backgroundColor,
       appBar: AppBar(

@@ -15,7 +15,6 @@ List<String> extractIngredients(Map<String, dynamic> data) {
       final combined = cleanedMeasure.isNotEmpty
           ? '$cleanedMeasure $cleanedIngredient'
           : cleanedIngredient;
-
       if (!seen.contains(combined.toLowerCase())) {
         ingredients.add(combined);
         seen.add(combined.toLowerCase());

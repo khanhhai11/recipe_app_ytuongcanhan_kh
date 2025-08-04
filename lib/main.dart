@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:recipe_app/providers/favourite_provider.dart';
 import 'package:recipe_app/router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 Future<void> main() async {
@@ -10,14 +12,19 @@ Future<void> main() async {
       authFlowType: AuthFlowType.pkce,
     ),
   );
-  runApp(const RecipeApp());
+  runApp(
+    ChangeNotifierProvider(
+      create: (_) => FavouritesProvider(),
+      child: const RecipeBox(),
+    ),
+  );
 }
-class RecipeApp extends StatefulWidget {
-  const RecipeApp({super.key});
+class RecipeBox extends StatefulWidget {
+  const RecipeBox({super.key});
   @override
-  State<RecipeApp> createState() => _RecipeAppState();
+  State<RecipeBox> createState() => _RecipeBoxState();
 }
-class _RecipeAppState extends State<RecipeApp> {
+class _RecipeBoxState extends State<RecipeBox> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp.router(
@@ -31,12 +38,8 @@ class _RecipeAppState extends State<RecipeApp> {
     );
   }
 }
-// TODO: Handle favourite system using supabase
-// TODO: Handle Snackbar + comment and star rating submission
-// TODO: Research supabase_flutter to handle star & comments
-
 // TODO: Make survey_screen UI less blank
 // TODO: Add filter by main ingredients
-// TODO: Add average star ratings for all recipe & suggestions item
 // TODO: Make mail verify UI more professional
 // TODO: Code the account info and survey data screen
+// TODO: Remove the show snack bar error

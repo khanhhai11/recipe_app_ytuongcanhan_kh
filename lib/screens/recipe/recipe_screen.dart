@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:like_button/like_button.dart';
+import 'package:provider/provider.dart';
 import 'package:transparent_image/transparent_image.dart';
 import '../../models/recipe.dart';
+import '../../providers/favourite_provider.dart';
 import '../../router.dart';
 import 'dart:math';
 class RecipeScreen extends StatefulWidget {
@@ -24,7 +27,52 @@ class _RecipeScreenState extends State<RecipeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.recipe.name, style: const TextStyle(fontWeight: FontWeight.bold)),
+        backgroundColor: const Color(0xFFEFF1F7),
+        title: Text(
+          widget.recipe.name,
+          style: const TextStyle(fontWeight: FontWeight.bold),
+        ),
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 12, top: 8, bottom: 8),
+            child: Consumer<FavouritesProvider>(
+              builder: (context, favouritesProvider, _) {
+                favouritesProvider.loadFavourites();
+                final isLiked = favouritesProvider.isFavourite(widget.recipe.id);
+                return LikeButton(
+                  isLiked: isLiked,
+                  size: 28,
+                  circleColor: const CircleColor(
+                    start: Colors.pink,
+                    end: Colors.pinkAccent,
+                  ),
+                  bubblesColor: const BubblesColor(
+                    dotPrimaryColor: Colors.pink,
+                    dotSecondaryColor: Colors.pinkAccent,
+                  ),
+                  likeBuilder: (bool isLiked) {
+                    return Icon(
+                      Icons.favorite,
+                      color: isLiked ? Colors.pink : Colors.grey,
+                      size: 32,
+                    );
+                  },
+                  onTap: (bool isCurrentlyLiked) async {
+                    final recipeId = widget.recipe.id;
+                    if (recipeId.isEmpty) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('This recipe cannot be favourited.')),
+                      );
+                      return isCurrentlyLiked;
+                    }
+                    await favouritesProvider.toggleFavourite(recipeId);
+                    return !isCurrentlyLiked;
+                  },
+                );
+              },
+            ),
+          )
+        ],
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),

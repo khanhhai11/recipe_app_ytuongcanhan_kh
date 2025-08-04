@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../models/recipe.dart';
-import '../../widgets/suggestion_recipe_item.dart';
+import '../../widgets/squared_recipe_item.dart';
 class AllSuggestionsScreen extends StatelessWidget {
   const AllSuggestionsScreen({super.key, required this.recipes});
   final List<Recipe> recipes;
@@ -27,7 +27,7 @@ class AllSuggestionsScreen extends StatelessWidget {
           childAspectRatio: 3/4,
         ),
         itemBuilder: (context, index) {
-          return SuggestionRecipeItem(recipe: recipes[index]);
+          return SquaredRecipeItem(recipe: recipes[index]);
         },
       ),
     );
