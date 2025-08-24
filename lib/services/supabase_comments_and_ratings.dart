@@ -11,16 +11,23 @@ class SupabaseCommentsAndRatingsService {
     if (avg == null) return 0.0;
     return (avg as num).toDouble();
   }
-  static Future<Map<String, dynamic>?> fetchUserFeedback(String recipeId) async {
+  static Future<Map<String, dynamic>> fetchUserFeedback(String recipeId) async {
     final userId = _client.auth.currentUser?.id;
-    if (userId == null) return null;
+    if (userId == null) return {};
     final response = await _client
         .from('recipe_app_comments_and_ratings')
-        .select('ratings, comments')
+        .select('username, ratings, comments')
         .eq('recipe_id', recipeId)
         .eq('user_id', userId)
         .maybeSingle();
-    return response;
+    return response ?? {};
+  }
+  static Future<List<Map<String, dynamic>>> fetchAllFeedback(String recipeId) async {
+    final response = await _client
+        .from('recipe_app_comments_and_ratings')
+        .select('username, ratings, comments')
+        .eq('recipe_id', recipeId);
+    return List<Map<String, dynamic>>.from(response);
   }
   static Future<void> submitFeedback({
     required String recipeId,

@@ -2,11 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:like_button/like_button.dart';
 import 'package:provider/provider.dart';
+import 'package:recipe_app/services/supabase_comments_and_ratings.dart';
 import 'package:transparent_image/transparent_image.dart';
 import '../../models/recipe.dart';
 import '../../providers/favourite_provider.dart';
 import '../../router.dart';
 import 'dart:math';
+import '../../widgets/comment_item.dart';
 class RecipeScreen extends StatefulWidget {
   const RecipeScreen({super.key, required this.recipe});
   final Recipe recipe;
@@ -147,7 +149,50 @@ class _RecipeScreenState extends State<RecipeScreen> {
                 ),
               ),
             ),
-            // TODO: Add comment section here
+            const SizedBox(height: 30),
+            Text(
+              'Comments:',
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 12),
+            FutureBuilder<List<Map<String, dynamic>>>(
+              future: SupabaseCommentsAndRatingsService.fetchAllFeedback(widget.recipe.id),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+                if (snapshot.hasError) {
+                  return const Text(
+                    'Error loading comments',
+                    style: TextStyle(color: Colors.red, fontSize: 18),
+                  );
+                }
+                final comments = snapshot.data ?? [];
+                if (comments.isEmpty) {
+                  return const Text(
+                    'No comments yet 😐',
+                    style: TextStyle(color: Colors.grey, fontSize: 18),
+                  );
+                }
+                return Column(
+                  children: comments.map((c) {
+                    final username = (c['username'] as String?)?.trim() ?? 'Anonymous';
+                    final comment = (c['comments'] as String?)?.trim() ?? '';
+                    final rating = (c['ratings'] is num)
+                        ? (c['ratings'] as num).toDouble()
+                        : 0.0;
+                    return CommentItem(
+                      username: username,
+                      comment: comment,
+                      rating: rating,
+                    );
+                  }).toList(),
+                );
+              },
+            ),
           ],
         ),
       ),
